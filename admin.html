@@ -3,66 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <title>Admin A&A Hogar</title>
-
 <style>
-body{
-font-family:Arial;
-background:#f4f4f4;
-padding:20px;
-}
-
-.container{
-max-width:900px;
-margin:auto;
-background:#fff;
-padding:20px;
-border-radius:10px;
-}
-
-input{
-width:100%;
-padding:10px;
-margin:5px 0;
-border:1px solid #ccc;
-border-radius:5px;
-}
-
-button{
-padding:10px;
-border:none;
-border-radius:5px;
-cursor:pointer;
-}
-
-.save{
-background:#1e3a5f;
-color:#fff;
-width:100%;
-}
-
-.del{
-background:red;
-color:#fff;
-}
-
-table{
-width:100%;
-margin-top:20px;
-border-collapse:collapse;
-}
-
-td,th{
-border:1px solid #ddd;
-padding:10px;
-text-align:left;
-}
-
-img{
-width:70px;
-height:70px;
-object-fit:cover;
-border-radius:5px;
-}
+body{font-family:Arial;background:#f4f4f4;padding:20px}
+.container{background:#fff;padding:20px;border-radius:10px;max-width:900px;margin:auto}
+input{width:100%;padding:10px;margin:5px 0}
+button{padding:10px;border:none;border-radius:5px;cursor:pointer}
+.save{background:#1e3a5f;color:#fff;width:100%}
+img{width:80px}
 </style>
 </head>
 
@@ -70,115 +17,76 @@ border-radius:5px;
 
 <div class="container">
 
-<h2>Administrador A&A Hogar</h2>
+<h2>Administrador (con imágenes)</h2>
 
 <input id="nombre" placeholder="Nombre">
 <input id="precio" type="number" placeholder="Precio">
 <input id="stock" type="number" placeholder="Stock">
 <input id="categoria" placeholder="Categoría">
 
-<h4>Imágenes (URLs)</h4>
-
-<input id="img1" placeholder="Imagen 1 URL">
-<input id="img2" placeholder="Imagen 2 URL">
-<input id="img3" placeholder="Imagen 3 URL">
-<input id="img4" placeholder="Imagen 4 URL">
+<input type="file" id="file1">
+<input type="file" id="file2">
+<input type="file" id="file3">
+<input type="file" id="file4">
 
 <button class="save" onclick="guardar()">Guardar Producto</button>
-
-<table>
-<thead>
-<tr>
-<th>Imagen</th>
-<th>Nombre</th>
-<th>Precio</th>
-<th>Stock</th>
-<th>Categoría</th>
-<th>Acción</th>
-</tr>
-</thead>
-
-<tbody id="tabla"></tbody>
-
-</table>
 
 </div>
 
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
 const firebaseConfig = {
 apiKey: "AIzaSyAxPHkKdqMWNY32QZMDdR8ca1d1chJnW2Q",
 authDomain: "aa-hogar.firebaseapp.com",
 projectId: "aa-hogar",
-storageBucket: "aa-hogar.firebasestorage.app",
+storageBucket: "aa-hogar.appspot.com",
 messagingSenderId: "1083066023138",
 appId: "1:1083066023138:web:b02bf8045d801975fe72bb"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const storage = getStorage(app);
 
-// GUARDAR PRODUCTO
+async function subir(file){
+if(!file) return null;
+
+const storageRef = ref(storage, "productos/" + Date.now() + file.name);
+await uploadBytes(storageRef, file);
+return await getDownloadURL(storageRef);
+}
+
 window.guardar = async function(){
 
-await addDoc(collection(db,"productos"),{
+const files = [
+document.getElementById("file1").files[0],
+document.getElementById("file2").files[0],
+document.getElementById("file3").files[0],
+document.getElementById("file4").files[0]
+];
 
+const urls = [];
+
+for(const f of files){
+const url = await subir(f);
+if(url) urls.push(url);
+}
+
+await addDoc(collection(db,"productos"),{
 nombre: nombre.value,
 precio: Number(precio.value),
 stock: Number(stock.value),
 categoria: categoria.value,
-
-imagenes: [
-img1.value,
-img2.value,
-img3.value,
-img4.value
-].filter(img => img !== "")
-
+imagenes: urls
 });
 
-alert("Producto guardado");
+alert("Producto guardado con imágenes");
 location.reload();
 }
-
-// CARGAR PRODUCTOS
-async function cargar(){
-
-const snap = await getDocs(collection(db,"productos"));
-
-const tabla = document.getElementById("tabla");
-tabla.innerHTML = "";
-
-snap.forEach(d => {
-
-const p = d.data();
-
-tabla.innerHTML += `
-<tr>
-<td><img src="${p.imagenes?.[0] || ''}"></td>
-<td>${p.nombre}</td>
-<td>$${p.precio}</td>
-<td>${p.stock}</td>
-<td>${p.categoria}</td>
-<td>
-<button class="del" onclick="eliminar('${d.id}')">Eliminar</button>
-</td>
-</tr>
-`;
-});
-
-}
-
-// ELIMINAR
-window.eliminar = async function(id){
-await deleteDoc(doc(db,"productos",id));
-location.reload();
-}
-
-cargar();
 
 </script>
 
