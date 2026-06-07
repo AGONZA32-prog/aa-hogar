@@ -52,17 +52,31 @@ overflow:hidden;
 box-shadow:0 2px 10px rgba(0,0,0,.1);
 }
 
-.card img{
+.main-img img{
 width:100%;
 height:220px;
 object-fit:cover;
-object-position:center;
 cursor:pointer;
-transition:0.3s;
 }
 
-.card img:hover{
-transform:scale(1.03);
+.thumbs{
+display:flex;
+gap:5px;
+padding:8px;
+flex-wrap:wrap;
+}
+
+.thumbs img{
+width:50px;
+height:50px;
+object-fit:cover;
+border-radius:5px;
+cursor:pointer;
+border:2px solid transparent;
+}
+
+.thumbs img:hover{
+border:2px solid #1e3a5f;
 }
 
 .info{
@@ -86,11 +100,6 @@ cursor:pointer;
 border-radius:5px;
 }
 
-.btn:hover{
-opacity:.9;
-}
-
-/* CARRITO */
 #carrito{
 position:fixed;
 right:10px;
@@ -127,7 +136,7 @@ border-radius:5px;
 
 <header>
 <h1>🏠 A&A Hogar</h1>
-<p>Tienda con carrito + imágenes pro</p>
+<p>Tienda con galería de imágenes PRO</p>
 </header>
 
 <div class="topbar">
@@ -219,10 +228,18 @@ if(!imgIndex[i]) imgIndex[i] = 0;
 cont.innerHTML += `
 <div class="card">
 
+<div class="main-img">
 <img 
 id="img-${i}" 
 src="${imgs[imgIndex[i]]}" 
 onclick="verImagen('${imgs[imgIndex[i]]}')">
+</div>
+
+<div class="thumbs">
+${imgs.map((img,ix)=>`
+<img src="${img}" onclick="cambiar(${i},${ix})">
+`).join("")}
+</div>
 
 <div class="info">
 <h3>${p.nombre}</h3>
@@ -244,9 +261,15 @@ Agregar al carrito
 });
 }
 
-/* 🔍 VER IMAGEN COMPLETA */
+/* 🔍 VER IMAGEN GRANDE */
 window.verImagen = function(url){
-window.open(url, "_blank");
+window.open(url,"_blank");
+}
+
+/* 🔁 CAMBIAR IMAGEN */
+window.cambiar = function(i,ix){
+imgIndex[i] = ix;
+document.getElementById("img-"+i).src = productos[i].imagenes[ix];
 }
 
 /* 🛒 AGREGAR */
@@ -255,7 +278,7 @@ carrito.push(productos[i]);
 actualizarCarrito();
 }
 
-/* ACTUALIZAR CARRITO */
+/* 🧾 CARRITO */
 function actualizarCarrito(){
 
 let lista = document.getElementById("listaCarrito");
@@ -271,7 +294,7 @@ lista.innerHTML += `
 
 }
 
-/* WHATSAPP FINAL */
+/* 🟢 WHATSAPP FINAL */
 window.finalizarCompra = function(){
 
 if(carrito.length === 0){
