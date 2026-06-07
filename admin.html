@@ -99,7 +99,6 @@ border-radius:5px;
 </thead>
 
 <tbody id="tabla"></tbody>
-
 </table>
 
 </div>
@@ -107,7 +106,8 @@ border-radius:5px;
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } 
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
 apiKey: "AIzaSyAxPHkKdqMWNY32QZMDdR8ca1d1chJnW2Q",
@@ -121,7 +121,7 @@ appId: "1:1083066023138:web:b02bf8045d801975fe72bb"
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// GUARDAR PRODUCTO
+/* GUARDAR */
 window.guardar = async function(){
 
 await addDoc(collection(db,"productos"),{
@@ -136,7 +136,9 @@ img1.value,
 img2.value,
 img3.value,
 img4.value
-].filter(img => img !== "")
+]
+.map(img => img.trim())
+.filter(img => img)
 
 });
 
@@ -144,7 +146,7 @@ alert("Producto guardado");
 location.reload();
 }
 
-// CARGAR PRODUCTOS
+/* CARGAR */
 async function cargar(){
 
 const snap = await getDocs(collection(db,"productos"));
@@ -172,7 +174,7 @@ tabla.innerHTML += `
 
 }
 
-// ELIMINAR
+/* ELIMINAR */
 window.eliminar = async function(id){
 await deleteDoc(doc(db,"productos",id));
 location.reload();
