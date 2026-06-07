@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A&A Hogar</title>
+
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
+
+body{
+background:#f5f5f5;
+}
+
+header{
+background:#1e3a5f;
+color:white;
+padding:20px;
+text-align:center;
+}
+
+.topbar{
+display:flex;
+gap:10px;
+padding:15px;
+flex-wrap:wrap;
+background:white;
+}
+
+input,select{
+padding:10px;
+border:1px solid #ccc;
+border-radius:5px;
+}
+
+#buscar{
+flex:1;
+}
+
+.cart{
+font-weight:bold;
+}
+
+.container{
+padding:20px;
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+gap:20px;
+}
+
+.card{
+background:white;
+border-radius:12px;
+overflow:hidden;
+box-shadow:0 2px 10px rgba(0,0,0,.1);
+}
+
+.card img{
+width:100%;
+height:220px;
+object-fit:cover;
+}
+
+.info{
+padding:15px;
+}
+
+.price{
+color:green;
+font-size:20px;
+font-weight:bold;
+margin:10px 0;
+}
+
+button{
+width:100%;
+padding:10px;
+border:none;
+background:#1e3a5f;
+color:white;
+cursor:pointer;
+border-radius:5px;
+}
+
+button:hover{
+opacity:.9;
+}
+
+.whatsapp{
+background:#25D366;
+margin-top:10px;
+}
+
+#carrito{
+position:fixed;
+right:10px;
+bottom:10px;
+background:white;
+padding:15px;
+border-radius:10px;
+box-shadow:0 0 10px rgba(0,0,0,.2);
+max-width:300px;
+}
+
+#listaCarrito{
+margin:10px 0;
+font-size:14px;
+}
+</style>
+
+</head>
+<body>
+
+<header>
+<h1>🏠 A&A Hogar</h1>
+<p>Catálogo de Productos</p>
+</header>
+
+<div class="topbar">
+
+<input type="text"
+id="buscar"
+placeholder="Buscar producto...">
+
+<select id="categoria">
+<option value="">Todas las categorías</option>
+<option value="Sala">Sala</option>
+<option value="Recámara">Recámara</option>
+<option value="Cocina">Cocina</option>
+</select>
+
+<div class="cart">
+🛒 <span id="contador">0</span>
+</div>
+
+</div>
+
+<div class="container" id="productos"></div>
+
+<div id="carrito">
+
+<h3>Carrito</h3>
+
+<div id="listaCarrito"></div>
+
+<button class="whatsapp"
+onclick="finalizarCompra()">
+Comprar por WhatsApp
+</button>
+
+</div>
+
+<script>
+
+let productos = [
+
+{
+nombre:"Sofá Moderno",
+precio:4500,
+stock:5,
+categoria:"Sala",
+imagenes:[
+"https://images.unsplash.com/photo-1555041469-a586c61ea9bc"
+]
+},
+
+{
+nombre:"Comedor 6 Sillas",
+precio:6200,
+stock:3,
+categoria:"Cocina",
+imagenes:[
+"https://images.unsplash.com/photo-1505693416388-ac5ce068fe85"
+]
+},
+
+{
+nombre:"Base de Cama Queen",
+precio:3900,
+stock:4,
+categoria:"Recámara",
+imagenes:[
+"https://images.unsplash.com/photo-1505693416388-ac5ce068fe85"
+]
+}
+
+];
+
+let carrito=[];
+
+function renderProductos(){
+
+const cont=document.getElementById("productos");
+
+let texto=
+document.getElementById("buscar")
+.value
+.toLowerCase();
+
+let categoria=
+document.getElementById("categoria")
+.value;
+
+cont.innerHTML="";
+
+productos.forEach((p,i)=>{
+
+if(
+(!texto ||
+p.nombre.toLowerCase().includes(texto))
+&&
+(!categoria ||
+p.categoria===categoria)
+){
+
+cont.innerHTML+=`
+
+<div class="card">
+
+<img src="${p.imagenes[0]}">
+
+<div class="info">
+
+<h3>${p.nombre}</h3>
+
+<p>${p.categoria}</p>
+
+<div class="price">
+$${p.precio}
+</div>
+
+<p>
+Disponibles: ${p.stock}
+</p>
+
+<button onclick="agregarCarrito(${i})">
+Agregar al carrito
+</button>
+
+</div>
+
+</div>
+
+`;
+
+}
+
+});
+
+}
+
+function agregarCarrito(i){
+
+carrito.push(productos[i]);
+
+actualizarCarrito();
+
+}
+
+function actualizarCarrito(){
+
+document.getElementById("contador")
+.innerText=carrito.length;
+
+let html="";
+
+carrito.forEach(p=>{
+
+html+=`
+<div>
+${p.nombre}
+- $${p.precio}
+</div>
+`;
+
+});
+
+document.getElementById("listaCarrito")
+.innerHTML=html;
+
+}
+
+function finalizarCompra(){
+
+if(carrito.length===0){
+
+alert("El carrito está vacío");
+
+return;
+
+}
+
+let mensaje=
+"Hola, me interesa comprar:%0A%0A";
+
+let total=0;
+
+carrito.forEach(p=>{
+
+mensaje+=
+`${p.nombre} - $${p.precio}%0A`;
+
+total+=p.precio;
+
+});
+
+mensaje+=`%0ATotal: $${total}`;
+
+window.open(
+`https://wa.me/5216563759945?text=${mensaje}`
+);
+
+}
+
+document
+.getElementById("buscar")
+.addEventListener(
+"keyup",
+renderProductos
+);
+
+document
+.getElementById("categoria")
+.addEventListener(
+"change",
+renderProductos
+);
+
+renderProductos();
+
+</script>
+
+</body>
+</html>
