@@ -32,14 +32,7 @@ background:white;
 flex-wrap:wrap;
 }
 
-#buscar{
-flex:1;
-padding:10px;
-border:1px solid #ccc;
-border-radius:5px;
-}
-
-#categoria{
+#buscar,#categoria{
 padding:10px;
 border:1px solid #ccc;
 border-radius:5px;
@@ -80,53 +73,85 @@ margin:10px 0;
 width:100%;
 padding:10px;
 border:none;
-background:#25D366;
+background:#1e3a5f;
 color:white;
 cursor:pointer;
 border-radius:5px;
+}
+
+.btn:hover{opacity:.9}
+
+/* CARRITO */
+#carrito{
+position:fixed;
+right:10px;
+bottom:10px;
+width:300px;
+background:white;
+padding:15px;
+border-radius:10px;
+box-shadow:0 0 10px rgba(0,0,0,.2);
+}
+
+.item{
+display:flex;
+justify-content:space-between;
+margin-bottom:8px;
+font-size:14px;
+}
+
+.remove{
+color:red;
+cursor:pointer;
+}
+
+.total{
+margin-top:10px;
 font-weight:bold;
 }
 
-.btn:hover{
-opacity:.9;
-}
-
-.thumbs{
-display:flex;
-gap:5px;
-margin-top:8px;
-}
-
-.thumbs img{
-width:40px;
-height:40px;
-object-fit:cover;
-border-radius:5px;
+.whatsapp{
+background:#25D366;
+color:white;
+border:none;
+padding:10px;
+width:100%;
+margin-top:10px;
 cursor:pointer;
-border:2px solid transparent;
+border-radius:5px;
 }
 </style>
-
 </head>
 
 <body>
 
 <header>
 <h1>🏠 A&A Hogar</h1>
-<p>Compra rápida por WhatsApp</p>
+<p>Tienda tipo Amazon + WhatsApp</p>
 </header>
 
 <div class="topbar">
-
-<input type="text" id="buscar" placeholder="Buscar producto...">
-
+<input id="buscar" placeholder="Buscar producto...">
 <select id="categoria">
 <option value="">Todas</option>
 </select>
-
 </div>
 
 <div class="container" id="productos"></div>
+
+<!-- 🛒 CARRITO -->
+<div id="carrito">
+<h3>🛒 Carrito</h3>
+<div id="lista"></div>
+
+<div class="total">
+Total: $<span id="total">0</span>
+</div>
+
+<button class="whatsapp" onclick="comprarTodo()">
+Comprar todo por WhatsApp
+</button>
+</div>
 
 <script type="module">
 
@@ -147,9 +172,9 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 let productos = [];
-let imgIndex = {};
+let carrito = [];
 
-async function cargarProductos(){
+async function cargar(){
 
 const snap = await getDocs(collection(db,"productos"));
 
@@ -163,7 +188,6 @@ if(p.categoria) cats.add(p.categoria);
 });
 
 let sel = document.getElementById("categoria");
-
 cats.forEach(c=>{
 let op = document.createElement("option");
 op.value = c;
@@ -186,36 +210,19 @@ productos.forEach((p,i)=>{
 
 if((!t || p.nombre.toLowerCase().includes(t)) && (!c || p.categoria === c)){
 
-let imgs =
-(p.imagenes && p.imagenes.length > 0)
-? p.imagenes
-: (p.imagen ? [p.imagen] : []);
-
-if(!imgIndex[i]) imgIndex[i] = 0;
-
 cont.innerHTML += `
 <div class="card">
-
-<img id="img-${i}" src="${imgs[imgIndex[i]] || ''}">
-
-<div class="thumbs">
-${imgs.map((img,ix)=>`
-<img src="${img}" onclick="cambiar(${i},${ix})">
-`).join("")}
-</div>
-
+<img src="${p.imagenes?.[0] || p.imagen || ''}">
 <div class="info">
 <h3>${p.nombre}</h3>
 <p>${p.categoria}</p>
 <div class="price">$${p.precio}</div>
-<p>Stock: ${p.stock}</p>
 
-<button class="btn" onclick="comprar('${p.nombre}', '${p.precio}')">
-Comprar por WhatsApp
+<button class="btn" onclick="agregar(${i})">
+Agregar al carrito
 </button>
 
 </div>
-
 </div>
 `;
 }
@@ -223,18 +230,57 @@ Comprar por WhatsApp
 });
 }
 
-/* CAMBIAR IMAGEN */
-window.cambiar = function(i,ix){
-imgIndex[i] = ix;
-document.getElementById("img-"+i).src = productos[i].imagenes?.[ix] || productos[i].imagen;
+/* 🛒 AGREGAR */
+window.agregar = function(i){
+carrito.push(productos[i]);
+actualizarCarrito();
 }
 
-/* WHATSAPP DIRECTO */
-window.comprar = function(nombre, precio){
+/* 🧾 ACTUALIZAR CARRITO */
+function actualizarCarrito(){
 
-let msg = "Hola, quiero comprar:%0A%0A";
-msg += `${nombre} - $${precio}%0A%0A`;
-msg += `Total: $${precio}`;
+let lista = document.getElementById("lista");
+lista.innerHTML = "";
+
+let total = 0;
+
+carrito.forEach((p,ix)=>{
+total += Number(p.precio);
+
+lista.innerHTML += `
+<div class="item">
+<span>${p.nombre} - $${p.precio}</span>
+<span class="remove" onclick="eliminar(${ix})">❌</span>
+</div>
+`;
+});
+
+document.getElementById("total").innerText = total;
+}
+
+/* ❌ ELIMINAR */
+window.eliminar = function(ix){
+carrito.splice(ix,1);
+actualizarCarrito();
+}
+
+/* 🟢 WHATSAPP FINAL */
+window.comprarTodo = function(){
+
+if(carrito.length === 0){
+alert("Carrito vacío");
+return;
+}
+
+let msg = "🛒 Pedido A&A Hogar:%0A%0A";
+let total = 0;
+
+carrito.forEach(p=>{
+msg += `• ${p.nombre} - $${p.precio}%0A`;
+total += Number(p.precio);
+});
+
+msg += `%0A💰 Total: $${total}`;
 
 window.open(
 `https://wa.me/5216563759945?text=${msg}`,
@@ -243,11 +289,11 @@ window.open(
 
 }
 
-/* FILTROS */
+/* filtros */
 document.getElementById("buscar").addEventListener("input",render);
 document.getElementById("categoria").addEventListener("change",render);
 
-cargarProductos();
+cargar();
 
 </script>
 
