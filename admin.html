@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Administrador A&A Hogar</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:#f4f4f4;
+padding:20px;
+}
+
+.container{
+max-width:1000px;
+margin:auto;
+background:white;
+padding:20px;
+border-radius:10px;
+}
+
+input{
+width:100%;
+padding:10px;
+margin:5px 0;
+border:1px solid #ccc;
+border-radius:5px;
+}
+
+button{
+padding:10px;
+border:none;
+cursor:pointer;
+border-radius:5px;
+}
+
+.guardar{
+background:#1e3a5f;
+color:white;
+width:100%;
+}
+
+.eliminar{
+background:red;
+color:white;
+}
+
+table{
+width:100%;
+margin-top:20px;
+border-collapse:collapse;
+}
+
+th,td{
+border:1px solid #ddd;
+padding:10px;
+text-align:left;
+}
+
+img{
+width:80px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Administrador A&A Hogar</h1>
+
+<input id="nombre" placeholder="Nombre">
+
+<input id="precio" type="number" placeholder="Precio">
+
+<input id="stock" type="number" placeholder="Stock">
+
+<input id="categoria" placeholder="Categoría">
+
+<input id="imagen" placeholder="URL de Imagen">
+
+<button
+class="guardar"
+onclick="guardarProducto()">
+Guardar Producto
+</button>
+
+<table>
+
+<thead>
+
+<tr>
+<th>Imagen</th>
+<th>Nombre</th>
+<th>Precio</th>
+<th>Stock</th>
+<th>Categoría</th>
+<th>Acción</th>
+</tr>
+
+</thead>
+
+<tbody id="tablaProductos">
+
+</tbody>
+
+</table>
+
+</div>
+
+<script type="module">
+
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+getFirestore,
+collection,
+addDoc,
+getDocs,
+deleteDoc,
+doc
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+
+apiKey: "AIzaSyAxPHkKdqMWNY32QZMDdR8ca1d1chJnW2Q",
+
+authDomain: "aa-hogar.firebaseapp.com",
+
+projectId: "aa-hogar",
+
+storageBucket: "aa-hogar.firebasestorage.app",
+
+messagingSenderId: "1083066023138",
+
+appId: "1:1083066023138:web:b02bf8045d801975fe72bb"
+
+};
+
+const app = initializeApp(firebaseConfig);
+
+const db = getFirestore(app);
+
+window.guardarProducto = async function(){
+
+const nombre =
+document.getElementById("nombre").value;
+
+const precio =
+Number(
+document.getElementById("precio").value
+);
+
+const stock =
+Number(
+document.getElementById("stock").value
+);
+
+const categoria =
+document.getElementById("categoria").value;
+
+const imagen =
+document.getElementById("imagen").value;
+
+if(!nombre){
+
+alert("Captura el nombre");
+
+return;
+
+}
+
+await addDoc(
+collection(db,"productos"),
+{
+nombre,
+precio,
+stock,
+categoria,
+imagen
+}
+);
+
+alert("Producto guardado");
+
+location.reload();
+
+}
+
+async function cargarProductos(){
+
+const tabla =
+document.getElementById("tablaProductos");
+
+tabla.innerHTML="";
+
+const querySnapshot =
+await getDocs(
+collection(db,"productos")
+);
+
+querySnapshot.forEach((item)=>{
+
+const p = item.data();
+
+tabla.innerHTML += `
+
+<tr>
+
+<td>
+<img src="${p.imagen}">
+</td>
+
+<td>${p.nombre}</td>
+
+<td>$${p.precio}</td>
+
+<td>${p.stock}</td>
+
+<td>${p.categoria}</td>
+
+<td>
+
+<button
+class="eliminar"
+onclick="eliminarProducto('${item.id}')">
+
+Eliminar
+
+</button>
+
+</td>
+
+</tr>
+
+`;
+
+});
+
+}
+
+window.eliminarProducto = async function(id){
+
+if(!confirm("¿Eliminar producto?")){
+
+return;
+
+}
+
+await deleteDoc(
+doc(db,"productos",id)
+);
+
+location.reload();
+
+}
+
+cargarProductos();
+
+</script>
+
+</body>
+</html>
