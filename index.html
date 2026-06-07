@@ -79,35 +79,15 @@ cursor:pointer;
 border-radius:5px;
 }
 
-.btn:hover{opacity:.9}
-
-/* CARRITO */
 #carrito{
 position:fixed;
 right:10px;
 bottom:10px;
-width:300px;
+width:280px;
 background:white;
 padding:15px;
 border-radius:10px;
 box-shadow:0 0 10px rgba(0,0,0,.2);
-}
-
-.item{
-display:flex;
-justify-content:space-between;
-margin-bottom:8px;
-font-size:14px;
-}
-
-.remove{
-color:red;
-cursor:pointer;
-}
-
-.total{
-margin-top:10px;
-font-weight:bold;
 }
 
 .whatsapp{
@@ -120,14 +100,30 @@ margin-top:10px;
 cursor:pointer;
 border-radius:5px;
 }
+
+.thumbs{
+display:flex;
+gap:5px;
+margin-top:8px;
+}
+
+.thumbs img{
+width:40px;
+height:40px;
+object-fit:cover;
+border-radius:5px;
+cursor:pointer;
+border:2px solid transparent;
+}
 </style>
+
 </head>
 
 <body>
 
 <header>
 <h1>🏠 A&A Hogar</h1>
-<p>Tienda tipo Amazon + WhatsApp</p>
+<p>Tienda funcionando correctamente</p>
 </header>
 
 <div class="topbar">
@@ -139,17 +135,12 @@ border-radius:5px;
 
 <div class="container" id="productos"></div>
 
-<!-- 🛒 CARRITO -->
 <div id="carrito">
 <h3>🛒 Carrito</h3>
-<div id="lista"></div>
+<div id="listaCarrito"></div>
 
-<div class="total">
-Total: $<span id="total">0</span>
-</div>
-
-<button class="whatsapp" onclick="comprarTodo()">
-Comprar todo por WhatsApp
+<button class="whatsapp" onclick="finalizarCompra()">
+Comprar por WhatsApp
 </button>
 </div>
 
@@ -173,7 +164,9 @@ const db = getFirestore(app);
 
 let productos = [];
 let carrito = [];
+let imgIndex = {};
 
+/* CARGAR */
 async function cargar(){
 
 const snap = await getDocs(collection(db,"productos"));
@@ -198,6 +191,7 @@ sel.appendChild(op);
 render();
 }
 
+/* RENDER PRODUCTOS */
 function render(){
 
 let cont = document.getElementById("productos");
@@ -210,13 +204,28 @@ productos.forEach((p,i)=>{
 
 if((!t || p.nombre.toLowerCase().includes(t)) && (!c || p.categoria === c)){
 
+let imgs = (p.imagenes && p.imagenes.length)
+? p.imagenes
+: ["https://via.placeholder.com/300"];
+
+if(!imgIndex[i]) imgIndex[i] = 0;
+
 cont.innerHTML += `
 <div class="card">
-<img src="${p.imagenes?.[0] || p.imagen || ''}">
+
+<img id="img-${i}" src="${imgs[imgIndex[i]]}">
+
+<div class="thumbs">
+${imgs.map((img,ix)=>`
+<img src="${img}" onclick="cambiar(${i},${ix})">
+`).join("")}
+</div>
+
 <div class="info">
 <h3>${p.nombre}</h3>
 <p>${p.categoria}</p>
 <div class="price">$${p.precio}</div>
+<p>Stock: ${p.stock}</p>
 
 <button class="btn" onclick="agregar(${i})">
 Agregar al carrito
@@ -230,47 +239,32 @@ Agregar al carrito
 });
 }
 
-/* 🛒 AGREGAR */
+/* CAMBIAR IMAGEN */
+window.cambiar = function(i,ix){
+imgIndex[i] = ix;
+document.getElementById("img-"+i).src = productos[i].imagenes?.[ix];
+}
+
+/* AGREGAR */
 window.agregar = function(i){
 carrito.push(productos[i]);
 actualizarCarrito();
 }
 
-/* 🧾 ACTUALIZAR CARRITO */
+/* ACTUALIZAR CARRITO */
 function actualizarCarrito(){
 
-let lista = document.getElementById("lista");
+let lista = document.getElementById("listaCarrito");
 lista.innerHTML = "";
 
-let total = 0;
-
-carrito.forEach((p,ix)=>{
-total += Number(p.precio);
-
-lista.innerHTML += `
-<div class="item">
-<span>${p.nombre} - $${p.precio}</span>
-<span class="remove" onclick="eliminar(${ix})">❌</span>
-</div>
-`;
+carrito.forEach(p=>{
+lista.innerHTML += `<div>${p.nombre} - $${p.precio}</div>`;
 });
 
-document.getElementById("total").innerText = total;
 }
 
-/* ❌ ELIMINAR */
-window.eliminar = function(ix){
-carrito.splice(ix,1);
-actualizarCarrito();
-}
-
-/* 🟢 WHATSAPP FINAL */
-window.comprarTodo = function(){
-
-if(carrito.length === 0){
-alert("Carrito vacío");
-return;
-}
+/* WHATSAPP FINAL */
+window.finalizarCompra = function(){
 
 let msg = "🛒 Pedido A&A Hogar:%0A%0A";
 let total = 0;
@@ -282,14 +276,10 @@ total += Number(p.precio);
 
 msg += `%0A💰 Total: $${total}`;
 
-window.open(
-`https://wa.me/5216563759945?text=${msg}`,
-"_blank"
-);
-
+window.open(`https://wa.me/5216563759945?text=${msg}`,"_blank");
 }
 
-/* filtros */
+/* FILTROS */
 document.getElementById("buscar").addEventListener("input",render);
 document.getElementById("categoria").addEventListener("change",render);
 
