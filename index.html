@@ -6,7 +6,6 @@
 <title>A&A Hogar</title>
 
 <style>
-
 *{
 margin:0;
 padding:0;
@@ -132,9 +131,7 @@ border-radius:5px;
 cursor:pointer;
 border:2px solid transparent;
 }
-
 </style>
-
 </head>
 
 <body>
@@ -159,20 +156,19 @@ border:2px solid transparent;
 <div class="container" id="productos"></div>
 
 <div id="carrito">
-
 <h3>Carrito</h3>
 <div id="listaCarrito"></div>
 
 <button class="whatsapp" onclick="finalizarCompra()">
 Comprar por WhatsApp
 </button>
-
 </div>
 
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, getDocs } 
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
 apiKey: "AIzaSyAxPHkKdqMWNY32QZMDdR8ca1d1chJnW2Q",
@@ -263,16 +259,38 @@ Agregar al carrito
 });
 }
 
+/* CAMBIAR IMAGEN */
 window.cambiar = function(i,ix){
 imgIndex[i] = ix;
 document.getElementById("img-"+i).src = productos[i].imagenes?.[ix] || productos[i].imagen;
 }
 
+/* AGREGAR AL CARRITO */
 window.add = function(i){
 carrito.push(productos[i]);
+
 document.getElementById("contador").innerText = carrito.length;
+
+renderCarrito();
 }
 
+/* RENDER CARRITO */
+function renderCarrito(){
+
+let cont = document.getElementById("listaCarrito");
+cont.innerHTML = "";
+
+carrito.forEach(p=>{
+cont.innerHTML += `
+<div style="margin-bottom:8px">
+${p.nombre} - $${p.precio}
+</div>
+`;
+});
+
+}
+
+/* WHATSAPP */
 window.finalizarCompra = function(){
 
 let msg = "Hola quiero comprar:%0A";
@@ -288,6 +306,7 @@ msg += `%0ATotal: $${total}`;
 window.open(`https://wa.me/5216563759945?text=${msg}`);
 }
 
+/* FILTERS */
 document.getElementById("buscar").addEventListener("input",render);
 document.getElementById("categoria").addEventListener("change",render);
 
