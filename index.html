@@ -45,11 +45,6 @@ border:1px solid #ccc;
 border-radius:5px;
 }
 
-.cart{
-font-weight:bold;
-padding:10px;
-}
-
 .container{
 padding:20px;
 display:grid;
@@ -85,36 +80,15 @@ margin:10px 0;
 width:100%;
 padding:10px;
 border:none;
-background:#1e3a5f;
+background:#25D366;
 color:white;
 cursor:pointer;
 border-radius:5px;
+font-weight:bold;
 }
 
 .btn:hover{
 opacity:.9;
-}
-
-#carrito{
-position:fixed;
-right:10px;
-bottom:10px;
-background:white;
-padding:15px;
-width:280px;
-border-radius:10px;
-box-shadow:0 0 10px rgba(0,0,0,.2);
-}
-
-.whatsapp{
-background:#25D366;
-color:white;
-border:none;
-padding:10px;
-width:100%;
-margin-top:10px;
-cursor:pointer;
-border-radius:5px;
 }
 
 .thumbs{
@@ -132,13 +106,14 @@ cursor:pointer;
 border:2px solid transparent;
 }
 </style>
+
 </head>
 
 <body>
 
 <header>
 <h1>🏠 A&A Hogar</h1>
-<p>Catálogo de Productos</p>
+<p>Compra rápida por WhatsApp</p>
 </header>
 
 <div class="topbar">
@@ -149,20 +124,9 @@ border:2px solid transparent;
 <option value="">Todas</option>
 </select>
 
-<div class="cart">🛒 <span id="contador">0</span></div>
-
 </div>
 
 <div class="container" id="productos"></div>
-
-<div id="carrito">
-<h3>Carrito</h3>
-<div id="listaCarrito"></div>
-
-<button class="whatsapp" onclick="finalizarCompra()">
-Comprar por WhatsApp
-</button>
-</div>
 
 <script type="module">
 
@@ -183,7 +147,6 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 let productos = [];
-let carrito = [];
 let imgIndex = {};
 
 async function cargarProductos(){
@@ -200,6 +163,7 @@ if(p.categoria) cats.add(p.categoria);
 });
 
 let sel = document.getElementById("categoria");
+
 cats.forEach(c=>{
 let op = document.createElement("option");
 op.value = c;
@@ -246,8 +210,8 @@ ${imgs.map((img,ix)=>`
 <div class="price">$${p.precio}</div>
 <p>Stock: ${p.stock}</p>
 
-<button class="btn" onclick="add(${i})">
-Agregar al carrito
+<button class="btn" onclick="comprar('${p.nombre}', '${p.precio}')">
+Comprar por WhatsApp
 </button>
 
 </div>
@@ -265,48 +229,21 @@ imgIndex[i] = ix;
 document.getElementById("img-"+i).src = productos[i].imagenes?.[ix] || productos[i].imagen;
 }
 
-/* AGREGAR AL CARRITO */
-window.add = function(i){
-carrito.push(productos[i]);
+/* WHATSAPP DIRECTO */
+window.comprar = function(nombre, precio){
 
-document.getElementById("contador").innerText = carrito.length;
+let msg = "Hola, quiero comprar:%0A%0A";
+msg += `${nombre} - $${precio}%0A%0A`;
+msg += `Total: $${precio}`;
 
-renderCarrito();
-}
-
-/* RENDER CARRITO */
-function renderCarrito(){
-
-let cont = document.getElementById("listaCarrito");
-cont.innerHTML = "";
-
-carrito.forEach(p=>{
-cont.innerHTML += `
-<div style="margin-bottom:8px">
-${p.nombre} - $${p.precio}
-</div>
-`;
-});
+window.open(
+`https://wa.me/5216563759945?text=${msg}`,
+"_blank"
+);
 
 }
 
-/* WHATSAPP */
-window.finalizarCompra = function(){
-
-let msg = "Hola quiero comprar:%0A";
-let total = 0;
-
-carrito.forEach(p=>{
-msg += `${p.nombre} - $${p.precio}%0A`;
-total += Number(p.precio);
-});
-
-msg += `%0ATotal: $${total}`;
-
-window.open(`https://wa.me/5216563759945?text=${msg}`);
-}
-
-/* FILTERS */
+/* FILTROS */
 document.getElementById("buscar").addEventListener("input",render);
 document.getElementById("categoria").addEventListener("change",render);
 
