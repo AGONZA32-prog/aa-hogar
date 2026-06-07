@@ -2,266 +2,107 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Administrador A&A Hogar</title>
+<title>Admin A&A Hogar</title>
 
 <style>
+body{font-family:Arial;background:#f4f4f4;padding:20px}
+.container{background:#fff;padding:20px;border-radius:10px;max-width:900px;margin:auto}
 
-body{
-font-family:Arial;
-background:#f4f4f4;
-padding:20px;
-}
+input{width:100%;padding:10px;margin:5px 0}
 
-.container{
-max-width:1000px;
-margin:auto;
-background:white;
-padding:20px;
-border-radius:10px;
-}
+button{padding:10px;border:none;border-radius:5px;cursor:pointer}
 
-input{
-width:100%;
-padding:10px;
-margin:5px 0;
-border:1px solid #ccc;
-border-radius:5px;
-}
+.save{background:#1e3a5f;color:#fff;width:100%}
+.del{background:red;color:#fff}
 
-button{
-padding:10px;
-border:none;
-cursor:pointer;
-border-radius:5px;
-}
-
-.guardar{
-background:#1e3a5f;
-color:white;
-width:100%;
-}
-
-.eliminar{
-background:red;
-color:white;
-}
-
-table{
-width:100%;
-margin-top:20px;
-border-collapse:collapse;
-}
-
-th,td{
-border:1px solid #ddd;
-padding:10px;
-text-align:left;
-}
-
-img{
-width:80px;
-}
-
+table{width:100%;margin-top:20px}
+img{width:60px}
 </style>
-
 </head>
 
 <body>
 
 <div class="container">
 
-<h1>Administrador A&A Hogar</h1>
+<h2>Administrador</h2>
 
 <input id="nombre" placeholder="Nombre">
-
 <input id="precio" type="number" placeholder="Precio">
-
 <input id="stock" type="number" placeholder="Stock">
+<input id="categoria" placeholder="Categoria">
 
-<input id="categoria" placeholder="Categoría">
+<input id="img1" placeholder="Imagen 1">
+<input id="img2" placeholder="Imagen 2">
+<input id="img3" placeholder="Imagen 3">
+<input id="img4" placeholder="Imagen 4">
 
-<input id="imagen" placeholder="URL de Imagen">
-
-<button
-class="guardar"
-onclick="guardarProducto()">
-Guardar Producto
-</button>
+<button class="save" onclick="guardar()">Guardar</button>
 
 <table>
-
-<thead>
-
-<tr>
-<th>Imagen</th>
-<th>Nombre</th>
-<th>Precio</th>
-<th>Stock</th>
-<th>Categoría</th>
-<th>Acción</th>
-</tr>
-
-</thead>
-
-<tbody id="tablaProductos">
-
-</tbody>
-
+<tbody id="tabla"></tbody>
 </table>
 
 </div>
 
 <script type="module">
 
-import { initializeApp }
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-
-import {
-getFirestore,
-collection,
-addDoc,
-getDocs,
-deleteDoc,
-doc
-}
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore,collection,addDoc,getDocs,deleteDoc,doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
-
 apiKey: "AIzaSyAxPHkKdqMWNY32QZMDdR8ca1d1chJnW2Q",
-
 authDomain: "aa-hogar.firebaseapp.com",
-
 projectId: "aa-hogar",
-
 storageBucket: "aa-hogar.firebasestorage.app",
-
 messagingSenderId: "1083066023138",
-
 appId: "1:1083066023138:web:b02bf8045d801975fe72bb"
-
 };
 
-const app = initializeApp(firebaseConfig);
+const app=initializeApp(firebaseConfig);
+const db=getFirestore(app);
 
-const db = getFirestore(app);
+window.guardar=async()=>{
 
-window.guardarProducto = async function(){
-
-const nombre =
-document.getElementById("nombre").value;
-
-const precio =
-Number(
-document.getElementById("precio").value
-);
-
-const stock =
-Number(
-document.getElementById("stock").value
-);
-
-const categoria =
-document.getElementById("categoria").value;
-
-const imagen =
-document.getElementById("imagen").value;
-
-if(!nombre){
-
-alert("Captura el nombre");
-
-return;
-
-}
-
-await addDoc(
-collection(db,"productos"),
-{
-nombre,
-precio,
-stock,
-categoria,
-imagen
-}
-);
-
-alert("Producto guardado");
-
-location.reload();
-
-}
-
-async function cargarProductos(){
-
-const tabla =
-document.getElementById("tablaProductos");
-
-tabla.innerHTML="";
-
-const querySnapshot =
-await getDocs(
-collection(db,"productos")
-);
-
-querySnapshot.forEach((item)=>{
-
-const p = item.data();
-
-tabla.innerHTML += `
-
-<tr>
-
-<td>
-<img src="${p.imagen}">
-</td>
-
-<td>${p.nombre}</td>
-
-<td>$${p.precio}</td>
-
-<td>${p.stock}</td>
-
-<td>${p.categoria}</td>
-
-<td>
-
-<button
-class="eliminar"
-onclick="eliminarProducto('${item.id}')">
-
-Eliminar
-
-</button>
-
-</td>
-
-</tr>
-
-`;
-
+await addDoc(collection(db,"productos"),{
+nombre:document.getElementById("nombre").value,
+precio:Number(document.getElementById("precio").value),
+stock:Number(document.getElementById("stock").value),
+categoria:document.getElementById("categoria").value,
+imagenes:[
+img1.value,img2.value,img3.value,img4.value
+].filter(x=>x)
 });
 
-}
-
-window.eliminarProducto = async function(id){
-
-if(!confirm("¿Eliminar producto?")){
-
-return;
-
-}
-
-await deleteDoc(
-doc(db,"productos",id)
-);
-
 location.reload();
-
 }
 
-cargarProductos();
+async function cargar(){
+
+let snap=await getDocs(collection(db,"productos"));
+
+let t=document.getElementById("tabla");
+t.innerHTML="";
+
+snap.forEach(d=>{
+let p=d.data();
+
+t.innerHTML+=`
+<tr>
+<td><img src="${p.imagenes?.[0]||''}"></td>
+<td>${p.nombre}</td>
+<td>${p.precio}</td>
+<td><button class="del" onclick="del('${d.id}')">X</button></td>
+</tr>
+`;
+});
+}
+
+window.del=async(id)=>{
+await deleteDoc(doc(db,"productos",id));
+location.reload();
+}
+
+cargar();
 
 </script>
 
