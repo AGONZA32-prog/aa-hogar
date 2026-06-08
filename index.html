@@ -335,10 +335,11 @@ carrito.push(productos[i]);
 console.log("Producto agregado:");
 console.log(productos[i]);
 
-console.log("Carrito actual:");
+console.log("Carrito:");
 console.log(carrito);
 
 actualizarCarrito();
+
 }
 
 function actualizarCarrito(){
@@ -364,16 +365,16 @@ alert("Carrito vacío");
 return;
 }
 
-let mensaje = "🛒 Pedido A&A Hogar:\n\n";
+let mensaje = "Pedido A&A Hogar\n\n";
 let total = 0;
 
 carrito.forEach((p,index)=>{
 
-mensaje += `${index + 1}. ${p.nombre}\n`;
-mensaje += `   Precio: $${p.precio}\n`;
+mensaje += (index + 1) + ". " + p.nombre + "\n";
+mensaje += "Precio: $" + p.precio + "\n";
 
 if(p.categoria){
-mensaje += `   Categoría: ${p.categoria}\n`;
+mensaje += "Categoria: " + p.categoria + "\n";
 }
 
 mensaje += "\n";
@@ -382,15 +383,17 @@ total += Number(p.precio);
 
 });
 
-mensaje += `💰 Total: $${total}`;
+mensaje += "Total: $" + total;
 
-console.log("Mensaje enviado:");
+console.log("Mensaje:");
 console.log(mensaje);
 
 const url =
-`https://wa.me/5216563759945?text=${encodeURIComponent(mensaje)}`;
+"https://wa.me/5216563759945?text=" +
+encodeURIComponent(mensaje);
 
-window.open(url,"_blank");
+window.open(url, "_blank");
+
 }
 /* FILTROS */
 document.getElementById("buscar").addEventListener("input",render);
