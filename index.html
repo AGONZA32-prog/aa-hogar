@@ -328,9 +328,16 @@ window.cerrarModal = function(){
 document.getElementById("modal").style.display = "none";
 }
 
-/* 🛒 CARRITO */
 window.agregar = function(i){
+
 carrito.push(productos[i]);
+
+console.log("Producto agregado:");
+console.log(productos[i]);
+
+console.log("Carrito actual:");
+console.log(carrito);
+
 actualizarCarrito();
 }
 
@@ -357,19 +364,34 @@ alert("Carrito vacío");
 return;
 }
 
-let msg = "🛒 Pedido A&A Hogar:%0A%0A";
+let mensaje = "🛒 Pedido A&A Hogar:\n\n";
 let total = 0;
 
-carrito.forEach(p=>{
-msg += `• ${p.nombre} - $${p.precio}%0A`;
-total += Number(p.precio);
-});
+carrito.forEach((p,index)=>{
 
-msg += `%0A💰 Total: $${total}`;
+mensaje += `${index + 1}. ${p.nombre}\n`;
+mensaje += `   Precio: $${p.precio}\n`;
 
-window.open(`https://wa.me/5216563759945?text=${msg}`,"_blank");
+if(p.categoria){
+mensaje += `   Categoría: ${p.categoria}\n`;
 }
 
+mensaje += "\n";
+
+total += Number(p.precio);
+
+});
+
+mensaje += `💰 Total: $${total}`;
+
+console.log("Mensaje enviado:");
+console.log(mensaje);
+
+const url =
+`https://wa.me/5216563759945?text=${encodeURIComponent(mensaje)}`;
+
+window.open(url,"_blank");
+}
 /* FILTROS */
 document.getElementById("buscar").addEventListener("input",render);
 document.getElementById("categoria").addEventListener("change",render);
